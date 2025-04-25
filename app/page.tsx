@@ -60,7 +60,7 @@ export default function Home() {
             (src, index) => (
               <div
                 key={src}
-                className="absolute inset-0 animate-fade-cycle"
+                className="absolute inset-0 animate-[var(--animation-fade-cycle)]"
                 style={{ animationDelay: `${index * 5}s` }}
               >
                 <Image
