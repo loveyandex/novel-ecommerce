@@ -1,139 +1,88 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import SimpleMap from './SimpleMap';
 
 interface ShippingAddress {
   lat: number;
   lng: number;
   address: string;
+  short: string;
 }
 
 interface MapModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (address: ShippingAddress) => void;
 }
 
-// Define DynamicMapProps for TypeScript
-interface DynamicMapProps {
-  position: [number, number];
-  onMapClick: (latlng: { lat: number; lng: number }) => void;
-}
+export default function MapModal({ isOpen, onClose }: MapModalProps) {
+  const [mapLoc, setMapLoc] = useState<{ lat: number; lng: number } | undefined>();
+  const router = useRouter();
 
-// Dynamically import the map component with SSR disabled and typed props
-const DynamicMap = dynamic<DynamicMapProps>(() => import('./DynamicMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex-1 flex items-center justify-center bg-neutral-700 rounded-lg">
-      <div className="animate-pulse rounded-full h-8 w-8 bg-primary-500/50"></div>
-    </div>
-  ),
-});
+  const handleSave = useCallback(() => {
+    if (!mapLoc) return;
 
-export default function MapModal({ isOpen, onClose, onSave }: MapModalProps) {
-  const [position, setPosition] = useState<[number, number]>([35.6892, 51.3890]); // Default: Tehran
-  const [address, setAddress] = useState('');
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const hasCheckedStorage = useRef(false);
+    const headers = new Headers();
+    headers.append('Api-Key', 'service.Ornq0Gg6rHELQm9QVonknQskY8C6HKfFcuxXQj9M');
 
-  useEffect(() => {
-    if (!isOpen || typeof window === 'undefined' || hasCheckedStorage.current) return;
-
-    // Mark storage as checked to prevent multiple checks
-    hasCheckedStorage.current = true;
-
-    // Check for existing shippingAddress (client-side only)
-    try {
-      const storedAddress = localStorage.getItem('shippingAddress');
-      if (storedAddress) {
-        const parsedAddress = JSON.parse(storedAddress) as ShippingAddress;
-        if (parsedAddress.lat && parsedAddress.lng && parsedAddress.address) {
-          onSave(parsedAddress);
+    fetch(`https://api.neshan.org/v4/reverse?lat=${mapLoc.lat}&lng=${mapLoc.lng}`, {
+      method: 'GET',
+      headers,
+    })
+      .then(response => response.json())
+      .then(result => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('addr', JSON.stringify({
+            defaultAddr: {
+              latlng: mapLoc,
+              addressAddress: result.formatted_address,
+              short: `${result.neighbourhood}, ${result.route_name}`,
+            },
+          }));
         }
-      }
-    } catch (error) {
-      console.error('Failed to parse shippingAddress:', error);
-    }
-  }, [isOpen, onSave]);
-
-  const fetchAddress = useCallback(async (lat: number, lng: number) => {
-    setIsGeocoding(true);
-    try {
-      // Placeholder for Nominatim API (uncomment and configure for production)
-      /*
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fa`,
-        { headers: { 'User-Agent': 'NovelEcommerceApp' } }
-      );
-      const data = await response.json();
-      setAddress(data.display_name || `آدرس: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-      */
-      // Mock address
-      setAddress(`آدرس نمونه: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-    } catch (error) {
-      console.error('Geocoding failed:', error);
-      setAddress('خطا در دریافت آدرس');
-    } finally {
-      setIsGeocoding(false);
-    }
-  }, []);
-
-  const handleMapClick = (latlng: { lat: number; lng: number }) => {
-    setPosition([latlng.lat, latlng.lng]);
-    fetchAddress(latlng.lat, latlng.lng);
-  };
+        onClose();
+        router.push('/shop');
+      })
+      .catch(error => console.error('Fetch error:', error));
+  }, [mapLoc, onClose, router]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 sm:p-6 transition-all duration-300">
-      <div className="bg-neutral-800 rounded-2xl p-6 w-full max-w-5xl h-[85vh] sm:h-[80vh] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center">
+      <div className="bg-surface-01 rounded-lg shadow-2xl overflow-hidden max-w-[450px] w-full h-[80vh] flex flex-col" role="dialog" aria-modal="true">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            انتخاب آدرس
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-neutral-400 hover:text-white transition-colors duration-200"
-            aria-label="بستن"
-          >
-            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div className="w-full z-[1000] p-4 bg-surface-01 border-b border-neutral-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button onClick={onClose} className="text-neutral-700 hover:text-primary-500 transition-colors">
+                <svg style={{ width: 24, height: 24, fill: 'currentColor' }} viewBox="0 0 24 24">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+              </button>
+              <span className="ml-4 text-neutral-700 text-sm font-semibold">جستجو محله</span>
+            </div>
+          </div>
+          <p className="text-base font-semibold text-neutral-700 mt-2">مکان دقیق دریافت سفارش را روی نقشه انتخاب کنید.</p>
         </div>
 
         {/* Map */}
-        <div className="flex-1 rounded-lg overflow-hidden relative">
-          <DynamicMap position={position} onMapClick={handleMapClick} />
-          {isGeocoding && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="animate-pulse rounded-full h-8 w-8 bg-primary-500/50"></div>
-            </div>
-          )}
-        </div>
-
-        {/* Address Input */}
-        <div className="mt-6">
-          <input
-            type="text"
-            value={address}
-            readOnly
-            className="w-full h-14 px-4 bg-neutral-700 text-white rounded-lg shadow-inner focus:outline-none"
-            placeholder="آدرس انتخاب‌شده"
+        <div className="flex-1 relative">
+          <SimpleMap
+            onMouseRelease={(map) => {
+              setMapLoc(map.getCenter());
+            }}
           />
+          {/* Save Button */}
+          <button
+            onClick={handleSave}
+            disabled={!mapLoc}
+            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-[400px] h-12 bg-secondary-500 text-white rounded-lg font-semibold hover:bg-secondary-300 disabled:bg-neutral-200 disabled:cursor-not-allowed transition-all duration-200"
+          >
+            ثبت آدرس
+          </button>
         </div>
-
-        {/* Save Button */}
-        <button
-          onClick={() => onSave({ lat: position[0], lng: position[1], address })}
-          disabled={isGeocoding || !address}
-          className="mt-6 w-full bg-primary-500 text-white h-14 rounded-lg font-semibold hover:bg-primary-600 disabled:bg-neutral-600 disabled:cursor-not-allowed transition-all duration-200"
-        >
-          ذخیره آدرس
-        </button>
       </div>
     </div>
   );

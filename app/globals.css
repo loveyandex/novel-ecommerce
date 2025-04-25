@@ -1,5 +1,91 @@
 @import "tailwindcss";
+ 
 
+
+/* Define custom theme for Tailwind CSS v4 */
+@theme {
+  --color-white: #ffffff;
+  --color-black: #323938;
+  --color-primary-700: #007a3b;
+  --color-primary-500: #029d53;
+  --color-primary-300: #45b874;
+  --color-primary-100: #c0e5cc;
+  --color-secondary-700: #ff3d00;
+  --color-secondary-500: #ff6200;
+  --color-secondary-300: #ff9600;
+  --color-secondary-100: #ffda7d;
+  --color-green-700: #39ae00;
+  --color-green-500: #6bb927;
+  --color-green-300: #9dc44d;
+  --color-hint-object-neutral: #8b9794;
+  --color-hint-object-error: #e05353;
+  --color-hint-object-success: #3eb675;
+  --color-hint-object-caution: #f9a825;
+  --color-hint-text-neutral: #505f5b;
+  --color-hint-text-error: #c33234;
+  --color-hint-text-success: #009a55;
+  --color-hint-text-caution: #f57f17;
+  --color-rating-0-2: #e05353;
+  --color-rating-2-3: #f9a825;
+  --color-rating-3-4: #a7b64d;
+  --color-rating-4-5: #3eb675;
+  --color-neutral-000: #ffffff;
+  --color-neutral-050: #f7f7f8;
+  --color-neutral-100: #efefef;
+  --color-neutral-200: #dee1e0;
+  --color-neutral-300: #c4cbc9;
+  --color-neutral-400: #8c9794;
+  --color-neutral-500: #697d79;
+  --color-neutral-600: #5f716c;
+  --color-neutral-700: #505f5b;
+  --color-neutral-800: #475250;
+  --color-neutral-900: #323938;
+  --color-dk-primary-500: #ef4056;
+  --color-surface-00: #ffffff;
+  --color-surface-01: #ffffff;
+  --color-surface-02: #efefef;
+  --color-text-low-emphasis: #81858b;
+  --color-button-primary: #029d53;
+  --color-button-brand: #e6123d;
+  --color-button-secondary: #ff6200;
+  --color-button-white: #ffffff;
+  --color-button-black: #323938;
+  --color-button-disable: #dee1e0;
+  --color-icon-primary: #029d53;
+  --color-icon-secondary: #ff6200;
+  --color-icon-white: #ffffff;
+  --color-icon-black: #323938;
+  --color-icon-disable: #c4cbc9;
+  --color-icon-low-emphasis: #8c9794;
+  --color-icon-high-emphasis: #505f5b;
+  --color-icon-success: #3eb675;
+  --color-icon-warning: #f9a825;
+  --color-icon-neutral-hint: #8b9794;
+  --color-icon-error: #e05353;
+  --color-app-background: #efefef;
+
+  --animation-slide-up: slide-up 300ms ease-in-out forwards;
+  --animation-slide-down: slide-down 300ms ease-in-out forwards;
+  --animation-fade-cycle: fade-cycle 20s infinite;
+
+  @keyframes slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  @keyframes slide-down {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+  }
+
+  @keyframes fade-cycle {
+    0%, 20% { opacity: 1; }
+    25%, 95% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+}
+
+/* Restored base styles */
 @layer base {
   body {
     font-family: 'Vazir', sans-serif;
@@ -10,40 +96,13 @@
   }
 }
 
-/* Define Vazir font */
-@font-face {
-  font-family: 'Vazir';
-  src: url('/fonts/Vazir-Regular.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+/* Hide scrollbar */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Tailwind CSS v4 theme configuration */
-:root {
-  --font-family-vazir: 'Vazir', sans-serif;
-}
-
-/* Custom animation for image fade cycle */
-@keyframes fade-cycle {
-  0%, 17% {
-    opacity: 1;
-  }
-  25%, 92% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.animate-fade-cycle {
-  animation: fade-cycle 20s infinite;
-}
-
-/* Tailwind custom utilities for RTL */
-@layer utilities {
-  .text-right {
-    text-align: right;
-  }
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
