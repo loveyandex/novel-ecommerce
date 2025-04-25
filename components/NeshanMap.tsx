@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
-import { map } from 'leaflet';
 
 interface NeshanMapProps {
   style?: React.CSSProperties;
@@ -52,8 +51,6 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
 
         const mapInstance = new window.L.Map(mapEl.current, { ...defaultOptions, ...options });
         mapInstanceRef.current = mapInstance;
-
-        console.log(mapInstance)
 
         if (onInit) onInit(window.L, mapInstance);
       },

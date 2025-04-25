@@ -65,10 +65,17 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
   const handleMouseRelease = useCallback(
     (map: any) => {
       const center = map.getCenter();
-      setMapLoc(center);
-      fetchAddress(center.lat, center.lng);
+      // Only update if the center has actually changed
+      if (
+        !mapLoc ||
+        Math.abs(mapLoc.lat - center.lat) > 0.0001 ||
+        Math.abs(mapLoc.lng - center.lng) > 0.0001
+      ) {
+        setMapLoc(center);
+        fetchAddress(center.lat, center.lng);
+      }
     },
-    [fetchAddress]
+    [mapLoc, fetchAddress]
   );
 
   const handleSave = useCallback(() => {
