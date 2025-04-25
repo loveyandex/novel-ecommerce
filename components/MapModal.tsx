@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import SimpleMap from './SimpleMap';
 
@@ -21,6 +21,8 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
   const [neighborhood, setNeighborhood] = useState<string>('ونک');
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -31,22 +33,35 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
   }, [isOpen]);
 
   const fetchAddress = useCallback(async (lat: number, lng: number) => {
-    const headers = new Headers();
-    headers.append('Api-Key', 'service.Ornq0Gg6rHELQm9QVonknQskY8C6HKfFcuxXQj9M');
+    // Prevent double fetch in Strict Mode
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
-    try {
-      const response = await fetch(`https://api.neshan.org/v4/reverse?lat=${lat}&lng=${lng}`, {
-        method: 'GET',
-        headers,
-      });
-      const result = await response.json();
-      if (result.status === 'OK') {
-        setNeighborhood(result.neighbourhood || 'محله نامشخص');
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setNeighborhood('خطا در دریافت محله');
+    // Debounce the fetch request
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
     }
+
+    fetchTimeoutRef.current = setTimeout(async () => {
+      const headers = new Headers();
+      headers.append('Api-Key', 'service.Ornq0Gg6rHELQm9QVonknQskY8C6HKfFcuxXQj9M');
+
+      try {
+        const response = await fetch(`https://api.neshan.org/v4/reverse?lat=${lat}&lng=${lng}`, {
+          method: 'GET',
+          headers,
+        });
+        const result = await response.json();
+        if (result.status === 'OK') {
+          setNeighborhood(result.neighbourhood || 'محله نامشخص');
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+        setNeighborhood('خطا در دریافت محله');
+      } finally {
+        hasFetchedRef.current = false;
+      }
+    }, 300); // 300ms debounce
   }, []);
 
   const handleSave = useCallback(() => {
@@ -54,6 +69,8 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
 
     const headers = new Headers();
     headers.append('Api-Key', 'service.Ornq0Gg6rHELQm9QVonknQskY8C6HKfFcuxXQj9M');
+
+    console.log("mapLoc",mapLoc)
 
     fetch(`https://api.neshan.org/v4/reverse?lat=${mapLoc.lat}&lng=${mapLoc.lng}`, {
       method: 'GET',
@@ -75,6 +92,16 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
       })
       .catch(error => console.error('Fetch error:', error));
   }, [mapLoc, onClose, router]);
+
+  // Reset the fetch flag when the modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      hasFetchedRef.current = false;
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen && !isVisible) return null;
 
@@ -108,14 +135,15 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
           <SimpleMap
             onMouseRelease={(map) => {
               const center = map.getCenter();
+              console.log(center)
               setMapLoc(center);
               fetchAddress(center.lat, center.lng);
             }}
           />
           {/* Marker */}
-          {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none w-6 h-9">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none w-6 h-9">
             <img src="/mapPinLocation.svg" alt="Marker" className="w-full h-full object-cover" />
-          </div> */}
+          </div>
           {/* Save Button */}
           <div className="absolute bottom-6 left-5 right-5 z-[9999]">
             <button

@@ -44,7 +44,6 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
       onLoad: () => {
         if (!mapEl.current || mapInstanceRef.current) return;
 
-        // Ensure window.L is available
         if (!window.L || !window.L.Map) {
           console.error("Neshan Maps Error: window.L.Map is not available");
           return;
@@ -52,6 +51,8 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
 
         const mapInstance = new window.L.Map(mapEl.current, { ...defaultOptions, ...options });
         mapInstanceRef.current = mapInstance;
+
+        console.log(mapInstance)
 
         if (onInit) onInit(window.L, mapInstance);
       },
@@ -70,7 +71,7 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [options, onInit]); // Removed 'map' from dependency array
+  }, [options, onInit]);
 
   return (
     <div ref={mapEl} style={{ ...defaultStyle, ...style }} />
