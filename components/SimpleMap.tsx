@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import NeshanMap from './NeshanMap';
 
 interface SimpleMapProps {
   onMouseRelease?: (map: any) => void;
 }
 
-export default function SimpleMap({ onMouseRelease }: SimpleMapProps) {
+function SimpleMap({ onMouseRelease }: SimpleMapProps) {
+  console.log('SimpleMap rendered'); // Debug log to check re-renders
+
   const LRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
   const isDraggingRef = useRef(false);
@@ -54,13 +56,15 @@ export default function SimpleMap({ onMouseRelease }: SimpleMapProps) {
         });
 
         map.on('zoomend', () => {
-          if (onMouseRelease && isDraggingRef.current && !isZoomingRef.current) 
+          if (onMouseRelease && !isDraggingRef.current) {
             onMouseRelease(map);
-
-          console.log("zoomend")
+          }
           isZoomingRef.current = false;
+          isDraggingRef.current = false;
         });
       }}
     />
   );
 }
+
+export default memo(SimpleMap);

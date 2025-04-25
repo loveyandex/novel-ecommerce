@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import SimpleMap from './SimpleMap';
-import { useMap } from '../context/MapContext';
 
 interface ShippingAddress {
   lat: number;
@@ -18,12 +17,13 @@ interface MapModalProps {
 }
 
 export default function MapModal({ isOpen, onClose }: MapModalProps) {
+  const [mapLoc, setMapLoc] = useState<{ lat: number; lng: number } | undefined>();
   const [neighborhood, setNeighborhood] = useState<string>('ونک');
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasFetchedRef = useRef(false);
-  const { mapLoc, setMapLoc } = useMap();
+  const mapCenterRef = useRef<{ lat: number; lng: number } | undefined>(undefined);
 
   useEffect(() => {
     if (isOpen) {
@@ -63,29 +63,32 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
     }, 300);
   }, []);
 
-  const handleMouseRelease = useCallback(
-    (map: any) => {
-      const center = map.getCenter();
-      // Only update if the center has actually changed (more precise threshold)
-      if (
-        !mapLoc ||
-        Math.abs(mapLoc.lat - center.lat) > 0.00001 ||
-        Math.abs(mapLoc.lng - center.lng) > 0.00001
-      ) {
-        setMapLoc(center);
-        fetchAddress(center.lat, center.lng);
-      }
-    },
-    [mapLoc, setMapLoc, fetchAddress]
-  );
+  const handleMouseRelease = useCallback((map: any) => {
+    const center = map.getCenter();
+    const prevCenter = mapCenterRef.current;
+
+    // Update mapCenterRef without causing a re-render
+    mapCenterRef.current = { lat: center.lat, lng: center.lng };
+
+    // Only update mapLoc and fetch address if the center has significantly changed
+    if (
+      !prevCenter ||
+      Math.abs(prevCenter.lat - center.lat) > 0.00001 ||
+      Math.abs(prevCenter.lng - center.lng) > 0.00001
+    ) {
+      setMapLoc(mapCenterRef.current);
+      fetchAddress(center.lat, center.lng);
+    }
+  }, [fetchAddress]); // Removed mapLoc from dependencies
 
   const handleSave = useCallback(() => {
-    if (!mapLoc) return;
+    const currentLoc = mapCenterRef.current || mapLoc;
+    if (!currentLoc) return;
 
     const headers = new Headers();
     headers.append('Api-Key', 'service.Ornq0Gg6rHELQm9QVonknQskY8C6HKfFcuxXQj9M');
 
-    fetch(`https://api.neshan.org/v4/reverse?lat=${mapLoc.lat}&lng=${mapLoc.lng}`, {
+    fetch(`https://api.neshan.org/v4/reverse?lat=${currentLoc.lat}&lng=${currentLoc.lng}`, {
       method: 'GET',
       headers,
     })
@@ -94,7 +97,7 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('addr', JSON.stringify({
             defaultAddr: {
-              latlng: mapLoc,
+              latlng: currentLoc,
               addressAddress: result.formatted_address,
               short: `${result.neighbourhood}, ${result.route_name}`,
             },
@@ -155,7 +158,7 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
           <div className="absolute bottom-6 left-5 right-5 z-[9999]">
             <button
               onClick={handleSave}
-              disabled={!mapLoc}
+              disabled={!mapLoc && !mapCenterRef.current}
               className="flex items-center justify-center gap-2 w-full h-12 px-4 rounded-md bg-secondary-500 text-white font-bold text-[15px] leading-[25px] disabled:bg-neutral-200 disabled:cursor-not-allowed transition-all duration-200"
             >
               <span className="truncate">تایید موقعیت مکانی: {neighborhood}</span>

@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
-import { useMap } from '../context/MapContext';
 
 interface NeshanMapProps {
   style?: React.CSSProperties;
@@ -17,10 +16,12 @@ interface NeshanMapProps {
   onInit?: (L: any, map: any) => void;
 }
 
-export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
+function NeshanMap({ style, options, onInit }: NeshanMapProps) {
+  console.log('NeshanMap rendered'); // Debug log to check re-renders
+
   const mapEl = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
-  const { mapLoc, setMapLoc } = useMap();
+  const mapCenterRef = useRef<[number, number]>([35.699739, 51.338097]);
 
   const defaultStyle: React.CSSProperties = {
     width: 'inherit',
@@ -35,7 +36,7 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
     maptype: 'neshan',
     poi: true,
     traffic: false,
-    center: mapLoc ? [mapLoc.lat, mapLoc.lng] : [35.699739, 51.338097] as [number, number],
+    center: mapCenterRef.current,
     zoom: 14,
   };
 
@@ -54,13 +55,15 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         const mapInstance = new window.L.Map(mapEl.current, { ...defaultOptions, ...options });
         mapInstanceRef.current = mapInstance;
 
-        // Set initial mapLoc if not set
-        if (!mapLoc) {
-          const center = mapInstance.getCenter();
-          setMapLoc({ lat: center.lat, lng: center.lng });
-        }
+        // Update mapCenterRef with the initial center
+        const initialCenter = mapInstance.getCenter();
+        mapCenterRef.current = [initialCenter.lat, initialCenter.lng];
 
-        console.log(mapInstance)
+        // Listen for moveend to update mapCenterRef on any movement (drag or zoom)
+        mapInstance.on('moveend', () => {
+          const center = mapInstance.getCenter();
+          mapCenterRef.current = [center.lat, center.lng];
+        });
 
         if (onInit) onInit(window.L, mapInstance);
       },
@@ -72,6 +75,9 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
     return () => {
       if (mapInstanceRef.current) {
         try {
+          // Preserve the current center before removing the map
+          const currentCenter = mapInstanceRef.current.getCenter();
+          mapCenterRef.current = [currentCenter.lat, currentCenter.lng];
           mapInstanceRef.current.remove();
         } catch (error) {
           console.error('Error removing map:', error);
@@ -79,9 +85,11 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [options, onInit, setMapLoc]);
+  }, [options, onInit]);
 
   return (
     <div ref={mapEl} style={{ ...defaultStyle, ...style }} />
   );
 }
+
+export default memo(NeshanMap);
