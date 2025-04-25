@@ -33,11 +33,9 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
   }, [isOpen]);
 
   const fetchAddress = useCallback(async (lat: number, lng: number) => {
-    // Prevent double fetch in Strict Mode
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
 
-    // Debounce the fetch request
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current);
     }
@@ -61,16 +59,23 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
       } finally {
         hasFetchedRef.current = false;
       }
-    }, 300); // 300ms debounce
+    }, 300);
   }, []);
+
+  const handleMouseRelease = useCallback(
+    (map: any) => {
+      const center = map.getCenter();
+      setMapLoc(center);
+      fetchAddress(center.lat, center.lng);
+    },
+    [fetchAddress]
+  );
 
   const handleSave = useCallback(() => {
     if (!mapLoc) return;
 
     const headers = new Headers();
     headers.append('Api-Key', 'service.Ornq0Gg6rHELQm9QVonknQskY8C6HKfFcuxXQj9M');
-
-    console.log("mapLoc",mapLoc)
 
     fetch(`https://api.neshan.org/v4/reverse?lat=${mapLoc.lat}&lng=${mapLoc.lng}`, {
       method: 'GET',
@@ -93,7 +98,6 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
       .catch(error => console.error('Fetch error:', error));
   }, [mapLoc, onClose, router]);
 
-  // Reset the fetch flag when the modal closes
   useEffect(() => {
     if (!isOpen) {
       hasFetchedRef.current = false;
@@ -133,12 +137,8 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
         {/* Map */}
         <div className="flex-1 relative">
           <SimpleMap
-            onMouseRelease={(map) => {
-              const center = map.getCenter();
-              console.log(center)
-              setMapLoc(center);
-              fetchAddress(center.lat, center.lng);
-            }}
+            currentCenter={mapLoc}
+            onMouseRelease={handleMouseRelease}
           />
           {/* Marker */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none w-6 h-9">

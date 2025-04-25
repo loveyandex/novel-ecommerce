@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
+import { map } from 'leaflet';
 
 interface NeshanMapProps {
   style?: React.CSSProperties;

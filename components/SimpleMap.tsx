@@ -4,10 +4,11 @@ import { useEffect, useRef } from 'react';
 import NeshanMap from './NeshanMap';
 
 interface SimpleMapProps {
+  currentCenter?: { lat: number; lng: number };
   onMouseRelease?: (map: any) => void;
 }
 
-export default function SimpleMap({ onMouseRelease }: SimpleMapProps) {
+export default function SimpleMap({ currentCenter, onMouseRelease }: SimpleMapProps) {
   const LRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
 
@@ -18,7 +19,6 @@ export default function SimpleMap({ onMouseRelease }: SimpleMapProps) {
       }
     };
 
-    // Attach mouseup listener to the document
     document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
@@ -28,16 +28,15 @@ export default function SimpleMap({ onMouseRelease }: SimpleMapProps) {
 
   return (
     <NeshanMap
+      options={currentCenter ? { center: [currentCenter.lat, currentCenter.lng] } : undefined}
       onInit={(L: any, map: any) => {
         LRef.current = L;
         mapRef.current = map;
 
-        // Add dragstart event to detect when dragging starts
         map.on('dragstart', () => {
-          // No action needed on dragstart, just ensuring drag events are handled
+          // No action needed on dragstart
         });
 
-        // Add dragend event as a fallback
         map.on('dragend', () => {
           if (onMouseRelease) {
             onMouseRelease(map);
