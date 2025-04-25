@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
+import { useMap } from '../context/MapContext';
 
 interface NeshanMapProps {
   style?: React.CSSProperties;
@@ -19,6 +20,7 @@ interface NeshanMapProps {
 export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
   const mapEl = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const { mapLoc, setMapLoc } = useMap();
 
   const defaultStyle: React.CSSProperties = {
     width: 'inherit',
@@ -33,7 +35,7 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
     maptype: 'neshan',
     poi: true,
     traffic: false,
-    center: [35.699739, 51.338097] as [number, number],
+    center: mapLoc ? [mapLoc.lat, mapLoc.lng] : [35.699739, 51.338097] as [number, number],
     zoom: 14,
   };
 
@@ -52,6 +54,14 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         const mapInstance = new window.L.Map(mapEl.current, { ...defaultOptions, ...options });
         mapInstanceRef.current = mapInstance;
 
+        // Set initial mapLoc if not set
+        if (!mapLoc) {
+          const center = mapInstance.getCenter();
+          setMapLoc({ lat: center.lat, lng: center.lng });
+        }
+
+        console.log(mapInstance)
+
         if (onInit) onInit(window.L, mapInstance);
       },
       onError: () => {
@@ -69,7 +79,7 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [options, onInit]);
+  }, [options, onInit, setMapLoc]);
 
   return (
     <div ref={mapEl} style={{ ...defaultStyle, ...style }} />

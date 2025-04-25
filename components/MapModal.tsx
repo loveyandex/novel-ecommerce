@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import SimpleMap from './SimpleMap';
+import { useMap } from '../context/MapContext';
 
 interface ShippingAddress {
   lat: number;
@@ -17,12 +18,12 @@ interface MapModalProps {
 }
 
 export default function MapModal({ isOpen, onClose }: MapModalProps) {
-  const [mapLoc, setMapLoc] = useState<{ lat: number; lng: number } | undefined>();
   const [neighborhood, setNeighborhood] = useState<string>('ونک');
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasFetchedRef = useRef(false);
+  const { mapLoc, setMapLoc } = useMap();
 
   useEffect(() => {
     if (isOpen) {
@@ -65,17 +66,17 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
   const handleMouseRelease = useCallback(
     (map: any) => {
       const center = map.getCenter();
-      // Only update if the center has actually changed
+      // Only update if the center has actually changed (more precise threshold)
       if (
         !mapLoc ||
-        Math.abs(mapLoc.lat - center.lat) > 0.0001 ||
-        Math.abs(mapLoc.lng - center.lng) > 0.0001
+        Math.abs(mapLoc.lat - center.lat) > 0.00001 ||
+        Math.abs(mapLoc.lng - center.lng) > 0.00001
       ) {
         setMapLoc(center);
         fetchAddress(center.lat, center.lng);
       }
     },
-    [mapLoc, fetchAddress]
+    [mapLoc, setMapLoc, fetchAddress]
   );
 
   const handleSave = useCallback(() => {
@@ -144,7 +145,6 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
         {/* Map */}
         <div className="flex-1 relative">
           <SimpleMap
-            currentCenter={mapLoc}
             onMouseRelease={handleMouseRelease}
           />
           {/* Marker */}

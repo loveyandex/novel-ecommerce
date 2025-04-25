@@ -4,20 +4,21 @@ import { useEffect, useRef } from 'react';
 import NeshanMap from './NeshanMap';
 
 interface SimpleMapProps {
-  currentCenter?: { lat: number; lng: number };
   onMouseRelease?: (map: any) => void;
 }
 
-export default function SimpleMap({ currentCenter, onMouseRelease }: SimpleMapProps) {
+export default function SimpleMap({ onMouseRelease }: SimpleMapProps) {
   const LRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
   const isDraggingRef = useRef(false);
+  const isZoomingRef = useRef(false);
 
   useEffect(() => {
     const handleMouseUp = () => {
-      if (mapRef.current && onMouseRelease && isDraggingRef.current) {
+      if (mapRef.current && onMouseRelease && isDraggingRef.current && !isZoomingRef.current) {
         onMouseRelease(mapRef.current);
-        isDraggingRef.current = false; // Reset drag flag
+        isDraggingRef.current = false;
+        isZoomingRef.current = false;
       }
     };
 
@@ -30,25 +31,34 @@ export default function SimpleMap({ currentCenter, onMouseRelease }: SimpleMapPr
 
   return (
     <NeshanMap
-      options={currentCenter ? { center: [currentCenter.lat, currentCenter.lng] } : undefined}
       onInit={(L: any, map: any) => {
         LRef.current = L;
         mapRef.current = map;
 
         map.on('dragstart', () => {
-          isDraggingRef.current = true; // Set drag flag when dragging starts
+          isDraggingRef.current = true;
+          isZoomingRef.current = false;
         });
 
         map.on('dragend', () => {
-          if (onMouseRelease && isDraggingRef.current) {
+          if (onMouseRelease && isDraggingRef.current && !isZoomingRef.current) {
             onMouseRelease(map);
-            isDraggingRef.current = false; // Reset drag flag
+            isDraggingRef.current = false;
+            isZoomingRef.current = false;
           }
         });
 
-        // Optional: Listen for zoom events to ensure no interference
         map.on('zoomstart', () => {
-          isDraggingRef.current = false; // Ensure zoom doesn't trigger onMouseRelease
+          isDraggingRef.current = false;
+          isZoomingRef.current = true;
+        });
+
+        map.on('zoomend', () => {
+          if (onMouseRelease && isDraggingRef.current && !isZoomingRef.current) 
+            onMouseRelease(map);
+
+          console.log("zoomend")
+          isZoomingRef.current = false;
         });
       }}
     />
