@@ -1,6 +1,4 @@
 @import "tailwindcss";
- 
-
 
 /* Define custom theme for Tailwind CSS v4 */
 @theme {
@@ -62,11 +60,11 @@
   --color-icon-warning: #f9a825;
   --color-icon-neutral-hint: #8b9794;
   --color-icon-error: #e05353;
-  --color-app-background: #efefef;
 
   --animation-slide-up: slide-up 300ms ease-in-out forwards;
   --animation-slide-down: slide-down 300ms ease-in-out forwards;
-  --animation-fade-cycle: fade-cycle 20s infinite;
+  --animation-image-fade: image-fade 8s ease-in-out infinite;
+  --animation-image-spin: image-spin 100s linear infinite;
 
   @keyframes slide-up {
     from { transform: translateY(100%); }
@@ -78,14 +76,20 @@
     to { transform: translateY(100%); }
   }
 
-  @keyframes fade-cycle {
-    0%, 20% { opacity: 1; }
-    25%, 95% { opacity: 0; }
+  @keyframes image-fade {
+    0% { opacity: 1; }
+    17% { opacity: 1; }
+    25% { opacity: 0; }
+    92% { opacity: 0; }
     100% { opacity: 1; }
+  }
+
+  @keyframes image-spin {
+    to { transform: rotate(360deg); }
   }
 }
 
-/* Restored base styles */
+/* Base styles */
 @layer base {
   body {
     font-family: 'Vazir', sans-serif;
@@ -105,4 +109,13 @@
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Custom classes for image animation */
+.image-container {
+  animation: var(--animation-image-fade);
+}
+
+.image-inner {
+  animation: var(--animation-image-spin);
 }

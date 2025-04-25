@@ -9,7 +9,7 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-app-background text-neutral-900 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white text-neutral-900 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
       <div className="container mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 py-16">
         {/* Text and Input */}
@@ -54,23 +54,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Animated Images */}
-        <div className="flex-1 relative h-64 sm:h-80 lg:h-[600px] w-full overflow-hidden rounded-xl shadow-2xl">
+        {/* Circular Animated Images */}
+        <div className="flex-1 relative h-64 sm:h-80 lg:h-[600px] w-full overflow-hidden rounded-full">
           {['/UserBread.jpg', '/UserFood.jpg', '/UserGrocery.jpg', '/UserPastry.jpg'].map(
             (src, index) => (
               <div
                 key={src}
-                className="absolute inset-0 animate-[var(--animation-fade-cycle)]"
-                style={{ animationDelay: `${index * 5}s` }}
+                className="absolute inset-0 image-container"
+                style={{ animationDelay: `${index * 2}s` }}
               >
-                <Image
-                  src={src}
-                  alt="Grocery item"
-                  fill
-                  className="object-cover rounded-xl"
-                  priority={index === 0}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
+                <div className="w-full h-full image-inner">
+                  <Image
+                    src={src}
+                    alt="Grocery item"
+                    fill
+                    className="object-cover rounded-full"
+                    priority={index === 0}
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                </div>
               </div>
             )
           )}

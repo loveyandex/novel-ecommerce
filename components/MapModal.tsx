@@ -113,9 +113,9 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
             }}
           />
           {/* Marker */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none w-6 h-9">
+          {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none w-6 h-9">
             <img src="/mapPinLocation.svg" alt="Marker" className="w-full h-full object-cover" />
-          </div>
+          </div> */}
           {/* Save Button */}
           <div className="absolute bottom-6 left-5 right-5 z-[9999]">
             <button

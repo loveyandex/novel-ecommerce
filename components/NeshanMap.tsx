@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
 
 interface NeshanMapProps {
@@ -18,7 +18,7 @@ interface NeshanMapProps {
 
 export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
   const mapEl = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<any>(null);
+  const mapInstanceRef = useRef<any>(null);
 
   const defaultStyle: React.CSSProperties = {
     width: 'inherit',
@@ -42,16 +42,18 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
 
     loadNeshanMap({
       onLoad: () => {
-        if (!mapEl.current || map) return;
+        if (!mapEl.current || mapInstanceRef.current) return;
+
+        // Ensure window.L is available
+        if (!window.L || !window.L.Map) {
+          console.error("Neshan Maps Error: window.L.Map is not available");
+          return;
+        }
 
         const mapInstance = new window.L.Map(mapEl.current, { ...defaultOptions, ...options });
-        setMap(mapInstance);
+        mapInstanceRef.current = mapInstance;
 
         if (onInit) onInit(window.L, mapInstance);
-
-        return () => {
-          mapInstance.remove();
-        };
       },
       onError: () => {
         console.error("Neshan Maps Error: Failed to load Neshan Maps");
@@ -59,9 +61,16 @@ export default function NeshanMap({ style, options, onInit }: NeshanMapProps) {
     });
 
     return () => {
-      if (map) map.remove();
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.remove();
+        } catch (error) {
+          console.error('Error removing map:', error);
+        }
+        mapInstanceRef.current = null;
+      }
     };
-  }, [options, onInit, map]);
+  }, [options, onInit]); // Removed 'map' from dependency array
 
   return (
     <div ref={mapEl} style={{ ...defaultStyle, ...style }} />
