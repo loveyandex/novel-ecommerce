@@ -20,4 +20,7 @@ export default function loadNeshanMap({ onLoad, onError }) {
   script.onload = () => onLoad && onLoad();
   script.onerror = () => onError && onError();
   document.body.appendChild(script);
+
+  console.log("FUUUUUUUUUUUUUUUUUUUUUUUUCKKKKKKKKKKKKKKKKKKKKK uUUUUUUUUUUUUUUUUUUUUUUUU");
+  
 }

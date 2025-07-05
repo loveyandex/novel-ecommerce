@@ -35,6 +35,14 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
 
     loadNeshanMap({
       onLoad: () => {
+
+
+        console.warn(` loadNeshanMap({
+      onLoad: () => {`)
+        console.log(onInit);
+
+
+
         if (!mapEl.current || mapInstanceRef.current) return;
 
         if (!window.L || !window.L.Map) {
@@ -75,7 +83,7 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [options, onInit]); // No need for defaultOptions in dependencies now
+  }, [options]); // No need for defaultOptions in dependencies now
 
   const defaultStyle: React.CSSProperties = {
     width: 'inherit',
