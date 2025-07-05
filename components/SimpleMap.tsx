@@ -1,8 +1,5 @@
 'use client';
-
-// Declare Leaflet types (since Neshan Maps is based on Leaflet)
-declare let L: any;
-
+import * as L from 'leaflet';
 import { useEffect, useRef, memo } from 'react';
 import NeshanMap from './NeshanMap';
 
@@ -35,8 +32,8 @@ function SimpleMap({ onMouseRelease, setMapInstance }: SimpleMapProps) {
 
   return (
     <NeshanMap
-      onInit={(L: typeof import('leaflet'), map: L.Map) => {
-        LRef.current = L;
+      onInit={(l:typeof L, map: L.Map) => {
+        LRef.current = l;
         mapRef.current = map;
 
         // Pass the map instance to the parent

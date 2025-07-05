@@ -1,5 +1,12 @@
 'use client';
 
+// Declare Leaflet types (since Neshan Maps is based on Leaflet)
+import * as L from 'leaflet';
+
+
+
+
+
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import SimpleMap from './SimpleMap';
@@ -18,7 +25,7 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasFetchedRef = useRef(false);
   const mapCenterRef = useRef<{ lat: number; lng: number } | undefined>(undefined);
-  const mapInstanceRef = useRef<any>(null); // To store the map instance
+  const mapInstanceRef = useRef<L.Map | null>(null); // Typed as L.Map | null
 
   useEffect(() => {
     if (isOpen) {
@@ -86,8 +93,8 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
       (position) => {
         const { latitude, longitude } = position.coords;
         if (mapInstanceRef.current) {
-          // Update the map's center to the user's location
-          mapInstanceRef.current.setCenter([latitude, longitude]);
+          // Update the map's center to the user's location using setView
+          mapInstanceRef.current.setView([latitude, longitude], 14); // 14 is the default zoom level
           // Update mapCenterRef and fetch address, same as handleMouseRelease
           mapCenterRef.current = { lat: latitude, lng: longitude };
           setMapLoc(mapCenterRef.current);

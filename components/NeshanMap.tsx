@@ -1,7 +1,7 @@
 'use client';
+import * as L from 'leaflet';
 
-// Declare Leaflet types (since Neshan Maps is based on Leaflet)
-declare let L: any;
+
 
 import { useEffect, useRef, memo } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
@@ -16,7 +16,7 @@ interface NeshanMapProps {
     center?: [number, number];
     zoom?: number;
   };
-  onInit?: (L: typeof import('leaflet'), map: L.Map) => void;
+  onInit?: (l: typeof L, map: L.Map) => void;
 }
 
 function NeshanMap({ style, options, onInit }: NeshanMapProps) {
@@ -24,25 +24,17 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const mapCenterRef = useRef<[number, number]>([35.699739, 51.338097]);
 
-  const defaultStyle: React.CSSProperties = {
-    width: 'inherit',
-    height: '100%',
-    margin: 0,
-    padding: 0,
-    background: '#eee',
-  };
-
-  const defaultOptions = {
-    key: 'web.DQdth5W91qXg4C57n9kMwCPPVoWJXcfF827t1ob3',
-    maptype: 'neshan',
-    poi: true,
-    traffic: false,
-    center: mapCenterRef.current,
-    zoom: 14,
-  };
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    const defaultOptions = {
+      key: 'web.DQdth5W91qXg4C57n9kMwCPPVoWJXcfF827t1ob3',
+      maptype: 'neshan',
+      poi: true,
+      traffic: false,
+      center: mapCenterRef.current,
+      zoom: 14,
+    };
 
     loadNeshanMap({
       onLoad: () => {
@@ -86,7 +78,15 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [options, onInit, defaultOptions]); // Added defaultOptions to dependency array
+  }, [options, onInit]); // No need for defaultOptions in dependencies now
+
+  const defaultStyle: React.CSSProperties = {
+    width: 'inherit',
+    height: '100%',
+    margin: 0,
+    padding: 0,
+    background: '#eee',
+  };
 
   return (
     <div ref={mapEl} style={{ ...defaultStyle, ...style }} />
