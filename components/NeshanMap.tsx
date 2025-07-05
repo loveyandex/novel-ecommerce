@@ -1,8 +1,5 @@
 'use client';
 import * as L from 'leaflet';
-
-
-
 import { useEffect, useRef, memo } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
 

@@ -32,7 +32,7 @@ function SimpleMap({ onMouseRelease, setMapInstance }: SimpleMapProps) {
 
   return (
     <NeshanMap
-      onInit={(l:typeof L, map: L.Map) => {
+      onInit={(l: typeof L, map: L.Map) => {
         LRef.current = l;
         mapRef.current = map;
 
