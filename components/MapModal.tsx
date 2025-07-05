@@ -3,13 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import SimpleMap from './SimpleMap';
-
-interface ShippingAddress {
-  lat: number;
-  lng: number;
-  address: string;
-  short: string;
-}
+import Image from 'next/image';
 
 interface MapModalProps {
   isOpen: boolean;
@@ -64,7 +58,7 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
     }, 300);
   }, []);
 
-  const handleMouseRelease = useCallback((map: any) => {
+  const handleMouseRelease = useCallback((map: L.Map) => {
     const center = map.getCenter();
     const prevCenter = mapCenterRef.current;
 
@@ -179,7 +173,13 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
           />
           {/* Marker */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none w-6 h-9">
-            <img src="/mapPinLocation.svg" alt="Marker" className="w-full h-full object-cover" />
+            <Image
+              src="/mapPinLocation.svg"
+              alt="Marker"
+              width={24}
+              height={36}
+              className="w-full h-full object-cover"
+            />
           </div>
           {/* My Location Button */}
           <div className="absolute bottom-20 right-5 z-[9999]">

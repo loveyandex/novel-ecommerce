@@ -1,5 +1,8 @@
 'use client';
 
+// Declare Leaflet types (since Neshan Maps is based on Leaflet)
+declare let L: any;
+
 import { useEffect, useRef, memo } from 'react';
 import loadNeshanMap from './loaders/neshan_map_loader';
 
@@ -13,14 +16,12 @@ interface NeshanMapProps {
     center?: [number, number];
     zoom?: number;
   };
-  onInit?: (L: any, map: any) => void;
+  onInit?: (L: typeof import('leaflet'), map: L.Map) => void;
 }
 
 function NeshanMap({ style, options, onInit }: NeshanMapProps) {
-  console.log('NeshanMap rendered'); // Debug log to check re-renders
-
   const mapEl = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
   const mapCenterRef = useRef<[number, number]>([35.699739, 51.338097]);
 
   const defaultStyle: React.CSSProperties = {
@@ -85,7 +86,7 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [options, onInit]);
+  }, [options, onInit, defaultOptions]); // Added defaultOptions to dependency array
 
   return (
     <div ref={mapEl} style={{ ...defaultStyle, ...style }} />

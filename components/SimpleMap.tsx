@@ -1,16 +1,19 @@
 'use client';
 
+// Declare Leaflet types (since Neshan Maps is based on Leaflet)
+declare let L: any;
+
 import { useEffect, useRef, memo } from 'react';
 import NeshanMap from './NeshanMap';
 
 interface SimpleMapProps {
-  onMouseRelease?: (map: any) => void;
-  setMapInstance?: (map: any) => void; // Callback to pass the map instance
+  onMouseRelease?: (map: L.Map) => void;
+  setMapInstance?: (map: L.Map) => void;
 }
 
 function SimpleMap({ onMouseRelease, setMapInstance }: SimpleMapProps) {
-  const LRef = useRef<any>(null);
-  const mapRef = useRef<any>(null);
+  const LRef = useRef<typeof L | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
   const isDraggingRef = useRef(false);
   const isZoomingRef = useRef(false);
 
@@ -32,7 +35,7 @@ function SimpleMap({ onMouseRelease, setMapInstance }: SimpleMapProps) {
 
   return (
     <NeshanMap
-      onInit={(L: any, map: any) => {
+      onInit={(L: typeof import('leaflet'), map: L.Map) => {
         LRef.current = L;
         mapRef.current = map;
 
