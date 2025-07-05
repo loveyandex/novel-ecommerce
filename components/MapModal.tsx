@@ -24,6 +24,7 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasFetchedRef = useRef(false);
   const mapCenterRef = useRef<{ lat: number; lng: number } | undefined>(undefined);
+  const mapInstanceRef = useRef<any>(null); // To store the map instance
 
   useEffect(() => {
     if (isOpen) {
@@ -79,7 +80,32 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
       setMapLoc(mapCenterRef.current);
       fetchAddress(center.lat, center.lng);
     }
-  }, [fetchAddress]); // Removed mapLoc from dependencies
+  }, [fetchAddress]);
+
+  const handleGetLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        if (mapInstanceRef.current) {
+          // Update the map's center to the user's location
+          mapInstanceRef.current.setCenter([latitude, longitude]);
+          // Update mapCenterRef and fetch address, same as handleMouseRelease
+          mapCenterRef.current = { lat: latitude, lng: longitude };
+          setMapLoc(mapCenterRef.current);
+          fetchAddress(latitude, longitude);
+        }
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        alert('خطا در دریافت موقعیت مکانی: لطفاً مجوز دسترسی به موقعیت را فعال کنید یا دوباره تلاش کنید.');
+      }
+    );
+  }, [fetchAddress]);
 
   const handleSave = useCallback(() => {
     const currentLoc = mapCenterRef.current || mapLoc;
@@ -149,10 +175,23 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
         <div className="flex-1 relative">
           <SimpleMap
             onMouseRelease={handleMouseRelease}
+            setMapInstance={(map) => { mapInstanceRef.current = map; }}
           />
           {/* Marker */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none w-6 h-9">
             <img src="/mapPinLocation.svg" alt="Marker" className="w-full h-full object-cover" />
+          </div>
+          {/* My Location Button */}
+          <div className="absolute bottom-20 right-5 z-[9999]">
+            <button
+              onClick={handleGetLocation}
+              className="bg-white rounded-full p-3 shadow-md hover:shadow-lg transition-shadow duration-200"
+              title="موقعیت من"
+            >
+              <svg className="w-6 h-6 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm9-2a9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9 9 9 0 0 1 9 9zm-2 0a7 7 0 0 0-7-7 7 7 0 0 0-7 7 7 7 0 0 0 7 7 7 7 0 0 0 7-7zM12 0a1 1 0 0 1 1 1v3a1 1 0 0 1-2 0V1a1 1 0 0 1 1-1zm0 19a1 1 0 0 1 1 1v3a1 1 0 0 1-2 0v-3a1 1 0 0 1 1-1zM0 12a1 1 0 0 1 1-1h3a1 1 0 0 1 0 2H1a1 1 0 0 1-1-1zm19 0a1 1 0 0 1 1-1h3a1 1 0 0 1 0 2h-3a1 1 0 0 1-1-1z" />
+              </svg>
+            </button>
           </div>
           {/* Save Button */}
           <div className="absolute bottom-6 left-5 right-5 z-[9999]">

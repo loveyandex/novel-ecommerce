@@ -5,11 +5,10 @@ import NeshanMap from './NeshanMap';
 
 interface SimpleMapProps {
   onMouseRelease?: (map: any) => void;
+  setMapInstance?: (map: any) => void; // Callback to pass the map instance
 }
 
-function SimpleMap({ onMouseRelease }: SimpleMapProps) {
-  console.log('SimpleMap rendered'); // Debug log to check re-renders
-
+function SimpleMap({ onMouseRelease, setMapInstance }: SimpleMapProps) {
   const LRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
   const isDraggingRef = useRef(false);
@@ -36,6 +35,11 @@ function SimpleMap({ onMouseRelease }: SimpleMapProps) {
       onInit={(L: any, map: any) => {
         LRef.current = L;
         mapRef.current = map;
+
+        // Pass the map instance to the parent
+        if (setMapInstance) {
+          setMapInstance(map);
+        }
 
         map.on('dragstart', () => {
           isDraggingRef.current = true;
