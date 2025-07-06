@@ -119,3 +119,77 @@
 .image-inner {
   animation: var(--animation-image-spin);
 }
+
+
+/* app/globals.css */
+.image-container {
+  animation: fade 20s ease-in-out infinite;
+}
+
+.image-inner {
+  animation: spin 100s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade {
+  0%, 25% { opacity: 0; }
+  25.1%, 100% { opacity: 1; }
+}
+
+.image-container:first-of-type {
+  animation-delay: 15s;
+}
+
+.image-container:nth-of-type(2) {
+  animation-delay: 10s;
+}
+
+.image-container:nth-of-type(3) {
+  animation-delay: 5s;
+}
+
+.image-container:nth-of-type(4) {
+  animation-delay: 0s;
+}
+/* app/globals.css */
+.rotate-image {
+  animation: fade 20s ease-in-out infinite, spin 100s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade {
+  0%, 25% { opacity: 0; }
+  25.1%, 100% { opacity: 1; }
+}
+
+.rotate-image:first-of-type {
+  animation-delay: 0s, 0s; /* No delay for first image */
+}
+
+.rotate-image:nth-of-type(2) {
+  animation-delay: 5s, 5s;
+}
+
+.rotate-image:nth-of-type(3) {
+  animation-delay: 10s, 10s;
+}
+
+.rotate-image:nth-of-type(4) {
+  animation-delay: 15s, 15s;
+}

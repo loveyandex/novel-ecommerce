@@ -54,28 +54,30 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Circular Animated Images */}
-        <div className="flex-1 relative h-64 sm:h-80 lg:h-[600px] w-full overflow-hidden rounded-full">
-          {['/UserBread.jpg', '/UserFood.jpg', '/UserGrocery.jpg', '/UserPastry.jpg'].map(
-            (src, index) => (
-              <div
-                key={src}
-                className="absolute inset-0 image-container"
-                style={{ animationDelay: `${index * 2}s` }}
-              >
-                <div className="w-full h-full image-inner">
-                  <Image
-                    src={src}
-                    alt="Grocery item"
-                    fill
-                    className="object-cover rounded-full"
-                    priority={index === 0}
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
+        {/* Rotating Images */}
+        <div className="flex-1 relative h-64 sm:h-80 lg:h-[600px] w-full overflow-hidden">
+          <div className="relative w-full h-full flex items-center justify-center mt-9 lg:mt-0">
+            {['/UserBread.jpg', '/UserFood.jpg', '/UserGrocery.jpg', '/UserPastry.jpg'].map(
+              (src, index) => (
+                <div
+                  key={src}
+                  className="absolute w-full h-full image-container"
+                  style={{ animationDelay: `${(3 - index) * 5}s` }} // 15s, 10s, 5s, 0s
+                >
+                  <div className="w-full h-full image-inner">
+                    <Image
+                      src={src}
+                      alt="Grocery item"
+                      fill
+                      className="object-cover"
+                      priority={index === 0}
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                  </div>
                 </div>
-              </div>
-            )
-          )}
+              )
+            )}
+          </div>
         </div>
       </div>
 
