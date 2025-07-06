@@ -47,7 +47,7 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
         });
         const result = await response.json();
         if (result.status === 'OK') {
-          setNeighborhood(result.neighbourhood || 'محله نامشخص');
+          setNeighborhood(result.formatted_address || 'محله نامشخص');
         }
       } catch (error) {
         console.error('Fetch error:', error);
@@ -86,8 +86,8 @@ export default function MapModal({ isOpen, onClose }: MapModalProps) {
       (position) => {
         const { latitude, longitude } = position.coords;
         if (mapInstanceRef.current) {
-          // Update the map's center to the user's location using setView
-          mapInstanceRef.current.setView([latitude, longitude], 14);
+          // Update the map's center to the user's location using current zoom
+          mapInstanceRef.current.setView([latitude, longitude], mapInstanceRef.current.getZoom() || 14);
           // Update mapCenterRef and fetch address, same as handleMouseRelease
           mapCenterRef.current = { lat: latitude, lng: longitude };
           setMapLoc(mapCenterRef.current);

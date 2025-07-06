@@ -20,9 +20,10 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
   const mapEl = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const mapCenterRef = useRef<[number, number]>([35.699739, 51.338097]);
+  const isInitialized = useRef(false); // Flag to ensure one-time initialization
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || isInitialized.current) return;
 
     const defaultOptions = {
       key: 'web.DQdth5W91qXg4C57n9kMwCPPVoWJXcfF827t1ob3',
@@ -35,18 +36,10 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
 
     loadNeshanMap({
       onLoad: () => {
-
-
-        console.warn(` loadNeshanMap({
-      onLoad: () => {`)
-        console.log(onInit);
-
-
-
         if (!mapEl.current || mapInstanceRef.current) return;
 
         if (!window.L || !window.L.Map) {
-          console.error("Neshan Maps Error: window.L.Map is not available");
+          console.error('Neshan Maps Error: window.L.Map is not available');
           return;
         }
 
@@ -63,10 +56,19 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
           mapCenterRef.current = [center.lat, center.lng];
         });
 
+        // Listen for zoomend to update center and preserve zoom level
+        mapInstance.on('zoomend', () => {
+          if (mapInstanceRef.current) {
+            const center = mapInstanceRef.current.getCenter();
+            mapCenterRef.current = [center.lat, center.lng];
+          }
+        });
+
         if (onInit) onInit(window.L, mapInstance);
+        isInitialized.current = true; // Mark as initialized
       },
       onError: () => {
-        console.error("Neshan Maps Error: Failed to load Neshan Maps");
+        console.error('Neshan Maps Error: Failed to load Neshan Maps');
       },
     });
 
@@ -81,9 +83,10 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
           console.error('Error removing map:', error);
         }
         mapInstanceRef.current = null;
+        isInitialized.current = false; // Reset for unmount
       }
     };
-  }, [options]); // No need for defaultOptions in dependencies now
+  }, [options]); // Removed onInit from dependencies per your fix
 
   const defaultStyle: React.CSSProperties = {
     width: 'inherit',
@@ -94,7 +97,9 @@ function NeshanMap({ style, options, onInit }: NeshanMapProps) {
   };
 
   return (
-    <div ref={mapEl} style={{ ...defaultStyle, ...style }} />
+    <div ref={mapEl} style={{ ...defaultStyle, ...style }}>
+      {/* Map */}
+    </div>
   );
 }
 
